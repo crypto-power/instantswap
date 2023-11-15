@@ -49,6 +49,9 @@ type CreateOrder struct {
 	OrderedAmount  float64 `json:"ordered_amount,string"`  //amount in "to" currency. you want to be received
 	InvoicedAmount float64 `json:"invoiced_amount,string"` //amount in "from" currency. you will send it
 	ToCurrency     string  `json:"to_currency"`
+	FromNetwork    string  `json:"from_network"`
+	ToNetwork      string  `json:"to_network"`
+	Provider       string  `json:"Provider"` // used for some intermediate exchange
 
 	//changenow.io
 	ExtraID string `json:"extraId,omitempty"` //changenow.io requirement
@@ -161,6 +164,7 @@ type ExchangeRateInfo struct {
 	EstimatedAmount float64
 	MaxOrder        float64
 	Signature       string
+	Provider        string // used for some intermediate exchange
 }
 
 type Status int
