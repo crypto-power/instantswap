@@ -11,7 +11,7 @@ import (
 
 const (
 	API_BASE = "https://trocador.app/api/"
-	LIBNAME  = "swapzone"
+	LIBNAME  = "trocador"
 )
 
 type trocador struct {
@@ -20,9 +20,9 @@ type trocador struct {
 }
 
 func init() {
-	/*instantswap.RegisterExchange(LIBNAME, func(config instantswap.ExchangeConfig) (instantswap.IDExchange, error) {
+	instantswap.RegisterExchange(LIBNAME, func(config instantswap.ExchangeConfig) (instantswap.IDExchange, error) {
 		return New(config)
-	})*/
+	})
 }
 
 // SetDebug set enable/disable http request/response dump.
@@ -30,7 +30,7 @@ func (t *trocador) SetDebug(enable bool) {
 	t.conf.Debug = enable
 }
 
-// New return a SwapZone client.
+// New return a trocador client.
 func New(conf instantswap.ExchangeConfig) (*trocador, error) {
 	if conf.ApiKey == "" {
 		return nil, fmt.Errorf("%s:error: APIKEY is blank", LIBNAME)
@@ -117,7 +117,6 @@ func (t *trocador) GetExchangeRateInfo(vars instantswap.ExchangeRateRequest) (re
 	form.Set("network_from", vars.FromNetwork)
 	form.Set("network_to", vars.ToNetwork)
 	form.Set("amount_from", fmt.Sprintf("%.8f", vars.Amount))
-	//form.Set("payment", "True")
 	r, err = t.client.Do(API_BASE, "GET", "new_rate?"+form.Encode(), "", false)
 	if err != nil {
 		return res, err
@@ -127,7 +126,6 @@ func (t *trocador) GetExchangeRateInfo(vars instantswap.ExchangeRateRequest) (re
 	if err != nil {
 		return res, err
 	}
-	fmt.Printf("%+v \n", rate)
 	coin, err := t.coin(vars.From)
 	if err != nil {
 		return res, err
@@ -171,11 +169,8 @@ func (t *trocador) CreateOrder(vars instantswap.CreateOrder) (res instantswap.Cr
 	form.Set("fixed", "True")
 	form.Set("refund", vars.RefundAddress)
 	form.Set("provider", vars.Provider)
-	//  refund_memo: the memo/ExtraID of the address where the user wants to receive back his coins in case a problem occurs
-	// (Mandatory if refund is used and the coin sent uses memo/ExtraID - Use '0' for no memo);
 	form.Set("refund_memo", "0")
 	r, err = t.client.Do(API_BASE, "GET", "new_trade?"+form.Encode(), "", false)
-	fmt.Println(string(r))
 	if err != nil {
 		return res, err
 	}
