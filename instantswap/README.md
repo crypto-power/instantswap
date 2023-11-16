@@ -22,7 +22,7 @@ import (
 ```
 Now we are supporting exchanges: [changelly](https://changelly.com/), [changenow](https://changenow.io/), 
 [coinswitch](https://coinswitch.co/), [fixedfloat](https://fixedfloat.com/), [flypme](https://flyp.me/),
-[godex](https://godex.io/), [shapeshift](https://shapeshift.com/)
+[godex](https://godex.io/), [shapeshift](https://shapeshift.com/), [trocador](https://trocador.app/)
 
 
 Then you can initial your exchange client:
