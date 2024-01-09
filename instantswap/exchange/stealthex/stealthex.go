@@ -103,6 +103,7 @@ func (s *stealthex) estimateAmount(vars instantswap.ExchangeRateRequest) (res in
 	}
 	res.EstimatedAmount = estimate.EstimatedAmount
 	res.ExchangeRate = vars.Amount / estimate.EstimatedAmount
+	res.Signature = estimate.RateId
 	return res, nil
 }
 
@@ -136,7 +137,42 @@ func (s *stealthex) QueryLimits(fromCurr, toCurr string) (res instantswap.QueryL
 }
 
 func (s *stealthex) CreateOrder(vars instantswap.CreateOrder) (res instantswap.CreateResultInfo, err error) {
-
+	var req = OrderRequest{
+		CurrencyFrom:  vars.FromCurrency,
+		CurrencyTo:    vars.ToCurrency,
+		AddressTo:     vars.Destination,
+		AmountFrom:    vars.InvoicedAmount,
+		RateId:        vars.Signature,
+		RefundAddress: vars.RefundAddress,
+		RefundExtraId: vars.RefundExtraID,
+		Provider:      vars.Provider,
+		Fixed:         true,
+	}
+	body, _ := json.Marshal(req)
+	r, err := s.client.Do(API_BASE, http.MethodPost, fmt.Sprintf("exchange?api_key=%s", s.conf.ApiKey), string(body), false)
+	if err != nil {
+		return res, err
+	}
+	var order Order
+	err = parseResponseData(r, &order)
+	if err != nil {
+		return res, err
+	}
+	res = instantswap.CreateResultInfo{
+		ChargedFee:     0,
+		Destination:    order.AddressTo,
+		ExchangeRate:   order.AmountFrom / order.AmountTo,
+		FromCurrency:   order.CurrencyFrom,
+		InvoicedAmount: order.AmountFrom,
+		OrderedAmount:  order.AmountTo,
+		ToCurrency:     order.CurrencyTo,
+		UUID:           order.Id,
+		DepositAddress: order.AddressFrom,
+		Expires:        0,
+		ExtraID:        "",
+		PayoutExtraID:  "",
+	}
+	return res, nil
 }
 
 func (s *stealthex) UpdateOrder(vars interface{}) (res instantswap.UpdateOrderResultInfo, err error) {
@@ -147,7 +183,25 @@ func (s *stealthex) CancelOrder(orderID string) (res string, err error) {
 }
 
 func (s *stealthex) OrderInfo(orderID string, extraIds ...string) (res instantswap.OrderInfoResult, err error) {
-
+	r, err := s.client.Do(API_BASE, http.MethodGet, fmt.Sprintf("exchange/%s?api_key=%s", orderID, s.conf.ApiKey), "", false)
+	if err != nil {
+		return res, err
+	}
+	var order Order
+	err = parseResponseData(r, &order)
+	if err != nil {
+		return res, err
+	}
+	res = instantswap.OrderInfoResult{
+		Expires:        0,
+		LastUpdate:     "",
+		ReceiveAmount:  order.AmountTo,
+		TxID:           order.TxTo,
+		Status:         order.Status,
+		InternalStatus: parseStatus(order.Status),
+		Confirmations:  "",
+	}
+	return
 }
 
 func (s *stealthex) EstimateAmount(vars interface{}) (res instantswap.EstimateAmount, err error) {
@@ -155,11 +209,34 @@ func (s *stealthex) EstimateAmount(vars interface{}) (res instantswap.EstimateAm
 }
 
 func parseResponseData(data []byte, obj interface{}) error {
-	/*var err Error
+	var err Error
 	if json.Unmarshal(data, &err) == nil {
-		if len(err.Error) > 0 {
-			return fmt.Errorf(err.Error)
+		if err.Code > 0 {
+			return fmt.Errorf(err.Message)
 		}
-	}*/
+	}
 	return json.Unmarshal(data, obj)
+}
+
+// waiting, confirming, exchanging, sending, finished, failed, refunded, verifying
+func parseStatus(status string) instantswap.Status {
+	switch status {
+	case "waiting":
+		return instantswap.OrderStatusWaitingForDeposit
+	case "confirming":
+		return instantswap.OrderStatusDepositReceived
+	case "exchanging":
+		return instantswap.OrderStatusExchanging
+	case "sending":
+		return instantswap.OrderStatusSending
+	case "finished":
+		return instantswap.OrderStatusCompleted
+	case "failed":
+		return instantswap.OrderStatusFailed
+	case "refunded":
+		return instantswap.OrderStatusRefunded
+	case "verifying":
+		return instantswap.OrderStatusDepositReceived
+	}
+	return instantswap.OrderStatusUnknown
 }
