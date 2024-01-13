@@ -1,3 +1,9 @@
+// the work on wizardswap is incompleted.
+// I tried to create an order(exchange in wizardswap) but the server
+// was always return "/tfalse" in the response body.
+// I tried to contact support but they do not response yet
+// wizardswap is leaved behide temporary
+
 package wizardswap
 
 import (
@@ -117,43 +123,7 @@ func (w *wizardswap) QueryLimits(fromCurr, toCurr string) (res instantswap.Query
 }
 
 func (w *wizardswap) CreateOrder(vars instantswap.CreateOrder) (res instantswap.CreateResultInfo, err error) {
-	var req = OrderRequest{
-		CurrencyFrom:  strings.ToLower(vars.FromCurrency),
-		CurrencyTo:    strings.ToLower(vars.ToCurrency),
-		AddressTo:     vars.Destination,
-		AmountFrom:    vars.InvoicedAmount,
-		RefundAddress: vars.RefundAddress,
-		RefundExtraId: vars.RefundExtraID,
-		ExtraIdTo:     vars.ExtraID,
-		ApiKey:        w.conf.ApiKey,
-	}
-	body, _ := json.Marshal(req)
-	fmt.Println(string(body))
-	r, err := w.client.Do(API_BASE, http.MethodPost, "exchange", string(body), false)
-	fmt.Println(string(r), err)
-	if err != nil {
-		return res, err
-	}
-	/*var order Order
-	err = parseResponseData(r, &order)
-	if err != nil {
-		return res, err
-	}
-	res = instantswap.CreateResultInfo{
-		ChargedFee:     0,
-		Destination:    order.AddressTo,
-		ExchangeRate:   order.AmountFrom / order.AmountTo,
-		FromCurrency:   order.CurrencyFrom,
-		InvoicedAmount: order.AmountFrom,
-		OrderedAmount:  order.AmountTo,
-		ToCurrency:     order.CurrencyTo,
-		UUID:           order.Id,
-		DepositAddress: order.AddressFrom,
-		Expires:        0,
-		ExtraID:        "",
-		PayoutExtraID:  "",
-	}*/
-	return res, nil
+	return res, fmt.Errorf("not supported yet")
 }
 
 func (w *wizardswap) UpdateOrder(vars interface{}) (res instantswap.UpdateOrderResultInfo, err error) {
@@ -164,25 +134,7 @@ func (w *wizardswap) CancelOrder(orderID string) (res string, err error) {
 }
 
 func (w *wizardswap) OrderInfo(orderID string, extraIds ...string) (res instantswap.OrderInfoResult, err error) {
-	/*r, err := w.client.Do(API_BASE, http.MethodGet, fmt.Sprintf("exchange/%s?api_key=%s", orderID, s.conf.ApiKey), "", false)
-	if err != nil {
-		return res, err
-	}
-	var order Order
-	err = parseResponseData(r, &order)
-	if err != nil {
-		return res, err
-	}
-	res = instantswap.OrderInfoResult{
-		Expires:        0,
-		LastUpdate:     "",
-		ReceiveAmount:  order.AmountTo,
-		TxID:           order.TxTo,
-		Status:         order.Status,
-		InternalStatus: parseStatus(order.Status),
-		Confirmations:  "",
-	}*/
-	return
+	return res, fmt.Errorf("not supported yet")
 }
 
 func (w *wizardswap) EstimateAmount(vars interface{}) (res instantswap.EstimateAmount, err error) {
@@ -190,12 +142,6 @@ func (w *wizardswap) EstimateAmount(vars interface{}) (res instantswap.EstimateA
 }
 
 func parseResponseData(data []byte, obj interface{}) error {
-	/*var err Error
-	if json.Unmarshal(data, &err) == nil {
-		if err.Code > 0 {
-			return fmt.Errorf(err.Message)
-		}
-	}*/
 	return json.Unmarshal(data, obj)
 }
 
