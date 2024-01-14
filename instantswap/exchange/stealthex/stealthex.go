@@ -29,7 +29,7 @@ func (s *stealthex) SetDebug(enable bool) {
 	s.conf.Debug = enable
 }
 
-// New return a trocador client.
+// New return a stealthex client.
 func New(conf instantswap.ExchangeConfig) (*stealthex, error) {
 	if conf.ApiKey == "" {
 		return nil, fmt.Errorf("%s:error: APIKEY is blank", LIBNAME)

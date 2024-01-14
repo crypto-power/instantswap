@@ -35,7 +35,7 @@ func (w *wizardswap) SetDebug(enable bool) {
 	w.conf.Debug = enable
 }
 
-// New return a trocador client.
+// New return a wizardswap client.
 func New(conf instantswap.ExchangeConfig) (*wizardswap, error) {
 	if conf.ApiKey == "" {
 		return nil, fmt.Errorf("%s:error: APIKEY is blank", LIBNAME)
